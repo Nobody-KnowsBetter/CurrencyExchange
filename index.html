@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .input-group input {
+            width: 60%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .input-group select {
+            width: 40%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 0 5px 5px 0;
+            font-size: 16px;
+            cursor: pointer;
+            outline: none;
+            background-color: #f9f9f9;
+        }
+        
+        .swap-btn {
+            background-color: #f9f9f9;
+            color: #666;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 15px auto;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .swap-btn:hover {
+            background-color: #eee;
+        }
+        
+        .convert-btn {
+            background-color: #4c6ef5;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .convert-btn:hover {
+            background-color: #3b5bdb;
+        }
+        
+        .result {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .last-updated {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Currency Converter</h1>
+        
+        <div class="input-group">
+            <input type="number" id="amount-from" placeholder="Enter amount" value="1">
+            <select id="currency-from">
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+                <option value="JPY">JPY</option>
+                <option value="CAD">CAD</option>
+                <option value="AUD">AUD</option>
+                <option value="CHF">CHF</option>
+                <option value="CNY">CNY</option>
+                <option value="INR">INR</option>
+                <option value="MXN">MXN</option>
+            </select>
+        </div>
+        
+        <button class="swap-btn" id="swap-btn">⇅</button>
+        
+        <div class="input-group">
+            <input type="number" id="amount-to" placeholder="Result" disabled>
+            <select id="currency-to">
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+                <option value="GBP">GBP</option>
+                <option value="JPY">JPY</option>
+                <option value="CAD">CAD</option>
+                <option value="AUD">AUD</option>
+                <option value="CHF">CHF</option>
+                <option value="CNY">CNY</option>
+                <option value="INR">INR</option>
+                <option value="MXN">MXN</option>
+            </select>
+        </div>
+        
+        <button class="convert-btn" id="convert-btn">Convert</button>
+        
+        <div class="result" id="result"></div>
+        <div class="error" id="error"></div>
+        <div class="last-updated" id="last-updated"></div>
+    </div>
+
+    <script>
+        // Exchange rates (simulated - normally these would come from an API)
+        const exchangeRates = {
+            USD: { EUR: 0.91, GBP: 0.78, JPY: 151.14, CAD: 1.36, AUD: 1.49, CHF: 0.90, CNY: 7.23, INR: 83.42, MXN: 16.72, USD: 1 },
+            EUR: { USD: 1.10, GBP: 0.86, JPY: 165.43, CAD: 1.49, AUD: 1.64, CHF: 0.98, CNY: 7.89, INR: 91.28, MXN: 18.48, EUR: 1 },
+            GBP: { USD: 1.28, EUR: 1.16, JPY: 193.05, CAD: 1.74, AUD: 1.91, CHF: 1.15, CNY: 9.21, INR: 106.65, MXN: 21.39, GBP: 1 },
+            JPY: { USD: 0.0066, EUR: 0.0060, GBP: 0.0052, CAD: 0.0090, AUD: 0.0099, CHF: 0.0059, CNY: 0.048, INR: 0.55, MXN: 0.11, JPY: 1 },
+            CAD: { USD: 0.74, EUR: 0.67, GBP: 0.57, JPY: 111.20, AUD: 1.10, CHF: 0.66, CNY: 5.30, INR: 61.54, MXN: 12.33, CAD: 1 },
+            AUD: { USD: 0.67, EUR: 0.61, GBP: 0.52, JPY: 101.33, CAD: 0.91, CHF: 0.60, CNY: 4.83, INR: 55.85, MXN: 11.22, AUD: 1 },
+            CHF: { USD: 1.11, EUR: 1.02, GBP: 0.87, JPY: 168.52, CAD: 1.51, AUD: 1.67, CNY: 8.05, INR: 93.19, MXN: 18.75, CHF: 1 },
+            CNY: { USD: 0.14, EUR: 0.13, GBP: 0.11, JPY: 20.90, CAD: 0.19, AUD: 0.21, CHF: 0.12, INR: 11.53, MXN: 2.31, CNY: 1 },
+            INR: { USD: 0.012, EUR: 0.011, GBP: 0.0094, JPY: 1.81, CAD: 0.016, AUD: 0.018, CHF: 0.011, CNY: 0.087, MXN: 0.20, INR: 1 },
+            MXN: { USD: 0.060, EUR: 0.054, GBP: 0.047, JPY: 9.04, CAD: 0.081, AUD: 0.089, CHF: 0.053, CNY: 0.43, INR: 4.99, MXN: 1 }
+        };
+
+        // DOM elements
+        const amountFromEl = document.getElementById('amount-from');
+        const currencyFromEl = document.getElementById('currency-from');
+        const amountToEl = document.getElementById('amount-to');
+        const currencyToEl = document.getElementById('currency-to');
+        const swapBtn = document.getElementById('swap-btn');
+        const convertBtn = document.getElementById('convert-btn');
+        const resultEl = document.getElementById('result');
+        const errorEl = document.getElementById('error');
+        const lastUpdatedEl = document.getElementById('last-updated');
+
+        // Set last updated date
+        lastUpdatedEl.textContent = `Exchange rates last updated: April 5, 2025`;
+
+        // Convert function
+        function convert() {
+            const amountFrom = parseFloat(amountFromEl.value);
+            const currencyFrom = currencyFromEl.value;
+            const currencyTo = currencyToEl.value;
+            
+            errorEl.textContent = '';
+            
+            // Validate input
+            if (isNaN(amountFrom) || amountFrom <= 0) {
+                errorEl.textContent = 'Please enter a valid amount';
+                resultEl.textContent = '';
+                amountToEl.value = '';
+                return;
+            }
+            
+            // Get exchange rate
+            const rate = exchangeRates[currencyFrom][currencyTo];
+            const result = amountFrom * rate;
+            
+            // Display result
+            amountToEl.value = result.toFixed(2);
+            resultEl.textContent = `${amountFrom} ${currencyFrom} = ${result.toFixed(2)} ${currencyTo}`;
+        }
+        
+        // Event listeners
+        convertBtn.addEventListener('click', convert);
+        
+        // Swap currencies
+        swapBtn.addEventListener('click', () => {
+            const tempCurrency = currencyFromEl.value;
+            currencyFromEl.value = currencyToEl.value;
+            currencyToEl.value = tempCurrency;
+            
+            if (amountToEl.value !== '') {
+                const tempAmount = amountFromEl.value;
+                amountFromEl.value = amountToEl.value;
+                amountToEl.value = tempAmount;
+                convert();
+            }
+        });
+        
+        // Initial conversion
+        convert();
+    </script>
+</body>
+</html>
